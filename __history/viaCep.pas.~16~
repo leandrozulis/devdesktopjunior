@@ -1,0 +1,119 @@
+unit viaCep;
+
+interface
+
+uses
+  System.JSON, System.Net.HttpClient, Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
+  FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.PG,
+  FireDAC.Phys.PGDef, FireDAC.VCLUI.Wait, FireDAC.Stan.Param, FireDAC.DatS,
+  FireDAC.DApt.Intf, FireDAC.DApt, Data.DB, FireDAC.Comp.DataSet,
+  FireDAC.Comp.Client, Vcl.Grids, Vcl.DBGrids, Vcl.StdCtrls;
+
+type
+  TCep = class(TForm)
+    FDConnection1: TFDConnection;
+    FDPhysPgDriverLink1: TFDPhysPgDriverLink;
+    FDTable1: TFDTable;
+    DataSource1: TDataSource;
+    EditCEP: TEdit;
+    ButtonBuscarCEP: TButton;
+    LabelLogradouro: TLabel;
+    LabelComplemento: TLabel;
+    LabelBairro: TLabel;
+    LabelLocalidade: TLabel;
+    LabelUF: TLabel;
+    LabelIBGE: TLabel;
+    LabelGia: TLabel;
+    LabelDDD: TLabel;
+    LabelSiafi: TLabel;
+    LabelCEP: TLabel;
+    Label1: TLabel;
+    procedure ButtonBuscarCEPClick(Sender: TObject);
+    procedure Label1Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Cep: TCep;
+
+implementation
+
+{$R *.dfm}
+
+procedure TCep.ButtonBuscarCEPClick(Sender: TObject);
+var
+  HttpClient: THTTPClient;
+  Response: IHTTPResponse;
+  JSONObj: TJSONObject;
+  URL, CEP, Logradouro, Complemento, Bairro, Localidade, UF, Ibge, Gia, Ddd, Siafi: string;
+begin
+  // Pega o valor do CEP digitado
+  CEP := EditCEP.Text;
+
+  // Monta a URL para consulta ao ViaCEP
+  URL := 'https://viacep.com.br/ws/' + CEP + '/json/';
+
+  // Cria o cliente HTTP e faz a requisição
+  HttpClient := THTTPClient.Create;
+  try
+    Response := HttpClient.Get(URL);
+
+    if Response.StatusCode = 200 then
+    begin
+      // Faz o parse da resposta JSON
+      JSONObj := TJSONObject.ParseJSONValue(Response.ContentAsString) as TJSONObject;
+
+      if Assigned(JSONObj) then
+      begin
+        // Pega os valores retornados no JSON
+        Cep := JSONObj.GetValue<string>('cep');
+        Logradouro := JSONObj.GetValue<string>('logradouro');
+        Complemento := JSONObj.GetValue<string>('complemento');
+        Bairro := JSONObj.GetValue<string>('bairro');
+        Localidade := JSONObj.GetValue<string>('localidade');
+        UF := JSONObj.GetValue<string>('uf');
+        Ibge := JSONObj.GetValue<string>('ibge');
+        Gia := JSONObj.GetValue<string>('gia');
+        Ddd := JSONObj.GetValue<string>('ddd');
+        Siafi := JSONObj.GetValue<string>('siafi');
+
+        // Atualiza os componentes de interface
+        LabelCep.Caption := 'Cep: ' + Cep;
+        LabelLogradouro.Caption := 'Logradouro: ' + Logradouro;
+        LabelComplemento.Caption := 'Complemento: ' + Complemento;
+        LabelBairro.Caption := 'Bairro: ' + Bairro;
+        LabelLocalidade.Caption := 'Localidade: ' + Localidade;
+        LabelUf.Caption := 'UF: ' + UF;
+        LabelIbge.Caption := 'IBGE: ' + Ibge;
+        LabelGia.Caption := 'GIA: ' + Gia;
+        LabelDdd.Caption := 'DDD: ' + Ddd;
+        LabelSiafi.Caption := 'Siafi: ' + Siafi;
+
+        // Salvar no banco de dados PostgreSQL
+        FDTable1.Append;
+        FDTable1.FieldByName('cep').AsString := CEP;
+        FDTable1.FieldByName('logradouro').AsString := Logradouro;
+        FDTable1.FieldByName('complemento').AsString := Complemento;
+        FDTable1.FieldByName('bairro').AsString := Bairro;
+        FDTable1.FieldByName('localidade').AsString := Localidade;
+        FDTable1.FieldByName('uf').AsString := UF;
+        FDTable1.FieldByName('ibge').AsString := Ibge;
+        FDTable1.FieldByName('gia').AsString := Gia;
+        FDTable1.FieldByName('ddd').AsString := Ddd;
+        FDTable1.FieldByName('siafi').AsString := Siafi;
+        FDTable1.Post;
+      end;
+    end
+    else
+      ShowMessage('Erro ao consultar o CEP: ' + IntToStr(Response.StatusCode));
+  finally
+    HttpClient.Free;
+  end;
+end;
+
+end.

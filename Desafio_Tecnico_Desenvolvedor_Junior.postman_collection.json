@@ -1,0 +1,58 @@
+{
+	"info": {
+		"_postman_id": "f8763bb3-5f9c-428d-92e3-964f83bec758",
+		"name": "Desafio_Tecnico_Desenvolvedor_Junior",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29043099"
+	},
+	"item": [
+		{
+			"name": "Consulta CEP Tecnospeed",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://viacep.com.br/ws/87015310/json/",
+					"protocol": "https",
+					"host": [
+						"viacep",
+						"com",
+						"br"
+					],
+					"path": [
+						"ws",
+						"87015310",
+						"json",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta CEP com Logradouro",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://viacep.com.br/ws/PR/Maringa/Rua+Vitorio+Balani/json/",
+					"protocol": "https",
+					"host": [
+						"viacep",
+						"com",
+						"br"
+					],
+					"path": [
+						"ws",
+						"PR",
+						"Maringa",
+						"Rua+Vitorio+Balani",
+						"json",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
